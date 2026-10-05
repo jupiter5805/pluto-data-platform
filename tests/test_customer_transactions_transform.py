@@ -17,9 +17,11 @@ def test_classifies_sale():
         }
     )
 
-    assert (
-        classify_transaction(row)
-        == "SALE"
+    result = classify_transaction(row)
+
+    assert result == (
+        "SALE",
+        "explicit_sales_category",
     )
 
 
@@ -33,9 +35,11 @@ def test_classifies_payment():
         }
     )
 
-    assert (
-        classify_transaction(row)
-        == "PAYMENT"
+    result = classify_transaction(row)
+
+    assert result == (
+        "PAYMENT",
+        "payment_keyword_and_received_amount",
     )
 
 
@@ -49,9 +53,11 @@ def test_classifies_tax():
         }
     )
 
-    assert (
-        classify_transaction(row)
-        == "TAX"
+    result = classify_transaction(row)
+
+    assert result == (
+        "TAX",
+        "tax_keyword",
     )
 
 
@@ -65,9 +71,11 @@ def test_classifies_rejection():
         }
     )
 
-    assert (
-        classify_transaction(row)
-        == "RETURN_REJECTION"
+    result = classify_transaction(row)
+
+    assert result == (
+        "RETURN_REJECTION",
+        "return_or_rejection_keyword",
     )
 
 
@@ -81,9 +89,65 @@ def test_classifies_advance():
         }
     )
 
-    assert (
-        classify_transaction(row)
-        == "ADVANCE"
+    result = classify_transaction(row)
+
+    assert result == (
+        "ADVANCE",
+        "advance_keyword",
+    )
+
+
+def test_due_amount_fallback():
+    row = pd.Series(
+        {
+            "category": None,
+            "description": "custom order",
+            "amount_due": 50000,
+            "amount_received": None,
+        }
+    )
+
+    result = classify_transaction(row)
+
+    assert result == (
+        "SALE",
+        "due_amount_fallback",
+    )
+
+
+def test_received_amount_fallback():
+    row = pd.Series(
+        {
+            "category": None,
+            "description": "transfer",
+            "amount_due": None,
+            "amount_received": 50000,
+        }
+    )
+
+    result = classify_transaction(row)
+
+    assert result == (
+        "PAYMENT",
+        "received_amount_fallback",
+    )
+
+
+def test_unknown_transaction():
+    row = pd.Series(
+        {
+            "category": None,
+            "description": None,
+            "amount_due": None,
+            "amount_received": None,
+        }
+    )
+
+    result = classify_transaction(row)
+
+    assert result == (
+        "UNKNOWN",
+        "unclassified",
     )
 
 
@@ -112,6 +176,44 @@ def test_valid_date():
     )
 
     assert result == "VALID"
+
+
+def test_transform_adds_classification_reason():
+    df = pd.DataFrame(
+        [
+            {
+                "transaction_date":
+                    pd.Timestamp(
+                        "2025-01-01"
+                    ),
+                "category": "sales",
+                "description": "bags",
+                "amount_due": 1000,
+                "amount_received": None,
+            }
+        ]
+    )
+
+    result = (
+        transform_customer_transactions(
+            df,
+            as_of_date="2026-10-03",
+        )
+    )
+
+    assert (
+        result.iloc[0][
+            "transaction_type"
+        ]
+        == "SALE"
+    )
+
+    assert (
+        result.iloc[0][
+            "classification_reason"
+        ]
+        == "explicit_sales_category"
+    )
 
 
 def test_transform_does_not_mutate_input():

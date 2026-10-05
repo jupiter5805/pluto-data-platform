@@ -27,8 +27,8 @@ def normalise_text(value):
 
 def classify_transaction(row):
     """
-    Classify a transaction using both category,
-    description and monetary direction.
+    Return both the transaction classification
+    and the reason used to classify it.
     """
 
     category = normalise_text(
@@ -58,8 +58,6 @@ def classify_transaction(row):
         else float(amount_received)
     )
 
-    # Returns/rejections first because they may
-    # also contain sale-related wording.
     if any(
         word in combined
         for word in [
@@ -70,9 +68,11 @@ def classify_transaction(row):
             "damaged",
         ]
     ):
-        return "RETURN_REJECTION"
+        return (
+            "RETURN_REJECTION",
+            "return_or_rejection_keyword",
+        )
 
-    # Tax-related transactions.
     if any(
         word in combined
         for word in [
@@ -83,15 +83,23 @@ def classify_transaction(row):
             "gst",
         ]
     ):
-        return "TAX"
+        return (
+            "TAX",
+            "tax_keyword",
+        )
 
     if "advance" in combined:
-        return "ADVANCE"
+        return (
+            "ADVANCE",
+            "advance_keyword",
+        )
 
     if "discount" in combined:
-        return "ADJUSTMENT"
+        return (
+            "ADJUSTMENT",
+            "adjustment_keyword",
+        )
 
-    # Explicit payment/income indicators.
     if any(
         word in combined
         for word in [
@@ -108,9 +116,11 @@ def classify_transaction(row):
         ]
     ):
         if received > 0:
-            return "PAYMENT"
+            return (
+                "PAYMENT",
+                "payment_keyword_and_received_amount",
+            )
 
-    # Explicit sales categories.
     if any(
         word in category
         for word in [
@@ -119,30 +129,39 @@ def classify_transaction(row):
             "credit sales",
         ]
     ):
-        return "SALE"
+        return (
+            "SALE",
+            "explicit_sales_category",
+        )
 
-    # Monetary fallback rules.
     if received > 0 and due == 0:
-        return "PAYMENT"
+        return (
+            "PAYMENT",
+            "received_amount_fallback",
+        )
 
     if due > 0 and received == 0:
-        return "SALE"
+        return (
+            "SALE",
+            "due_amount_fallback",
+        )
 
     if due > 0 and received > 0:
-        return "ADJUSTMENT"
+        return (
+            "ADJUSTMENT",
+            "both_due_and_received",
+        )
 
-    return "UNKNOWN"
+    return (
+        "UNKNOWN",
+        "unclassified",
+    )
 
 
 def get_date_status(
     transaction_date,
     as_of_date,
 ):
-    """
-    Classify transaction dates without silently
-    modifying suspicious values.
-    """
-
     if pd.isna(transaction_date):
         return "MISSING_DATE"
 
@@ -174,13 +193,17 @@ def build_quality_flags(
         flags.append(date_status)
 
     due = row.get("amount_due")
-    received = row.get("amount_received")
+    received = row.get(
+        "amount_received"
+    )
 
     if (
         pd.notna(due)
         and float(due) < 0
     ):
-        flags.append("NEGATIVE_DUE")
+        flags.append(
+            "NEGATIVE_DUE"
+        )
 
     if (
         pd.notna(received)
@@ -210,10 +233,6 @@ def transform_customer_transactions(
     dataframe,
     as_of_date=None,
 ):
-    """
-    Produce the curated customer transaction layer.
-    """
-
     df = dataframe.copy()
 
     if as_of_date is None:
@@ -226,9 +245,21 @@ def transform_customer_transactions(
             as_of_date
         )
 
-    df["transaction_type"] = df.apply(
+    classifications = df.apply(
         classify_transaction,
         axis=1,
+    )
+
+    df["transaction_type"] = (
+        classifications.apply(
+            lambda result: result[0]
+        )
+    )
+
+    df["classification_reason"] = (
+        classifications.apply(
+            lambda result: result[1]
+        )
     )
 
     df["date_status"] = df[
@@ -296,6 +327,17 @@ def run_transformation():
     print(
         curated[
             "transaction_type"
+        ]
+        .value_counts()
+        .to_string()
+    )
+
+    print(
+        "\nCLASSIFICATION REASONS"
+    )
+    print(
+        curated[
+            "classification_reason"
         ]
         .value_counts()
         .to_string()
