@@ -1,0 +1,12 @@
+FROM apache/airflow:2.10.5-python3.12
+
+# Keep Pluto/dbt dependencies isolated from Airflow's own Python environment.
+# This prevents dbt from upgrading protobuf/Jinja/etc. inside Airflow itself.
+COPY requirements-airflow-tasks.txt /tmp/requirements-airflow-tasks.txt
+
+RUN python -m venv /home/airflow/pluto-venv \
+    && /home/airflow/pluto-venv/bin/pip install --no-cache-dir \
+       -r /tmp/requirements-airflow-tasks.txt \
+    && python -m venv /home/airflow/dbt-venv \
+    && /home/airflow/dbt-venv/bin/pip install --no-cache-dir \
+       "dbt-postgres>=1.9,<2"
