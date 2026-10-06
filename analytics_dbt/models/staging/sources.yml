@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: customer_transactions
+        columns:
+          - name: source_key
+            tests:
+              - unique
+              - not_null

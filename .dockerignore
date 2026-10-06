@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.DS_Store
+.env
+data
+analytics_dbt/target
+analytics_dbt/logs
+analytics_dbt/dbt_packages
+infra/terraform/.terraform
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+airflow/logs

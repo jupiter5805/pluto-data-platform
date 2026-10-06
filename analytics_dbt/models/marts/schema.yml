@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: One row per customer.
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        tests:
+          - not_null
+
+  - name: dim_date
+    description: Calendar dimension covering valid transaction dates.
+    columns:
+      - name: date_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_transactions
+    description: Transaction-level fact table.
+    columns:
+      - name: transaction_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: date_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id

@@ -15,3 +15,11 @@ data/processed/*
 
 dashboard/*.pbix*.pyc
 *.pyc
+analytics_dbt/target/
+analytics_dbt/logs/
+analytics_dbt/dbt_packages/
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+airflow/logs/
+airflow/*.db

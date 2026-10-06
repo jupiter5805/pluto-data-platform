@@ -259,3 +259,27 @@ Run the complete local pipeline with:
 ```bash
 ./run_pipeline.sh
 ```
+
+## Pluto Data Platform V2
+
+V2 extends the real Pluto Packaging pipeline with a production-style
+warehouse and serving architecture:
+
+- PostgreSQL warehouse
+- incremental idempotent loading
+- dbt staging, star schema and tests
+- `dim_customer`, `dim_date`, `fact_transactions`
+- Power BI-ready analytical views
+- FastAPI read-only service
+- Airflow orchestration DAG
+- Docker Compose
+- GitHub Actions CI
+- AWS Terraform baseline for S3/RDS/Secrets Manager/CloudWatch
+
+Run the local V2 stack with:
+
+```bash
+./run_platform_v2.sh
+```
+
+See `docs/v2_architecture.md` for the full architecture.

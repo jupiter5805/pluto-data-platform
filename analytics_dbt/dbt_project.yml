@@ -1,0 +1,17 @@
+name: pluto_analytics
+version: "1.0.0"
+config-version: 2
+
+profile: pluto
+
+model-paths: ["models"]
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  pluto_analytics:
+    staging:
+      +schema: staging
+      +materialized: view
+    marts:
+      +schema: analytics
+      +materialized: table

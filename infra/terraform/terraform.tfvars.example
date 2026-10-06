@@ -1,0 +1,3 @@
+aws_region   = "eu-west-2"
+project_name = "pluto-data-platform"
+db_username  = "pluto_admin"
