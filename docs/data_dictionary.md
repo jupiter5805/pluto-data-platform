@@ -1,160 +1,50 @@
-# Data Dictionary
+# Pluto Data Platform — Data Dictionary
 
-## Customer Transaction Staging Layer
+## Source layer
 
-### `transaction_date`
-Date associated with the customer-ledger transaction.
+The platform ingests Pluto Packaging operational Excel workbooks from
+`data/raw/` while retaining source workbook, worksheet and row lineage.
 
-### `customer_name`
-Customer name derived from the source worksheet.
+## Staging layer — `stg_customer_transactions`
 
-### `reference_number`
-Invoice, serial or transaction reference where available.
+Standardised transaction-level records produced from the source workbooks.
 
-### `description`
-Original transaction or product description from the source ledger.
+Typical fields include transaction date, customer name, reference,
+description, category, quantity, weight, tax, rate, amounts, source lineage
+and ingestion metadata.
 
-### `category`
-Original business category recorded in Excel.
+## Curated layer — `cur_customer_transactions`
 
-### `quantity`
-Recorded unit quantity where available.
+Analytics-ready transaction records created after cleaning, standardisation,
+classification and data-quality processing.
 
-### `weight_kg`
-Recorded transaction weight in kilograms where applicable.
+Additional analytical fields include transaction classification,
+classification reason, date status, quality flags, realised-transaction
+indicator and ledger effect where available.
 
-### `tax`
-Tax amount where explicitly represented by the source.
+## Customer dimension — `dim_customer`
 
-### `rate`
-Recorded unit rate or price.
+One analytical row per customer, with a deterministic customer identifier
+and customer-level transaction metrics.
 
-### `amount_due`
-Amount charged to the customer.
+## Data lineage
 
-### `amount_received`
-Payment or credit received from the customer.
-
-### `balance`
-Running balance supplied by the original customer ledger.
-
-### `source_workbook`
-Name of the Excel workbook from which the record was ingested.
-
-### `source_sheet`
-Name of the source worksheet.
-
-### `source_row`
-Original Excel row number used for lineage and troubleshooting.
-
-### `ingested_at`
-Timestamp recording when the pipeline ingested the record.
-
----
-
-# Curated Customer Transactions
-
-The curated layer contains all staging columns plus additional engineered fields.
-
-### `transaction_type`
-Standardised business classification.
-
-Current values include:
-
-```text
-SALE
-PAYMENT
-RETURN_REJECTION
-TAX
-ADVANCE
-ADJUSTMENT
-UNKNOWN
-```
-
-### `classification_reason`
-Records the rule responsible for assigning `transaction_type`.
-
-Examples:
-
-```text
-explicit_sales_category
-payment_keyword_and_received_amount
-tax_keyword
-return_or_rejection_keyword
-advance_keyword
-due_amount_fallback
-received_amount_fallback
-unclassified
-```
-
-### `date_status`
-Quality classification for the transaction date.
-
-Possible values:
-
-```text
-VALID
-MISSING_DATE
-FUTURE_DATED
-PRE_COMPANY_DATE
-```
-
-### `quality_flags`
-One or more quality warnings associated with the record.
-
-Examples:
-
-```text
-OK
-MISSING_DATE
-FUTURE_DATED
-PRE_COMPANY_DATE
-NEGATIVE_DUE
-NEGATIVE_RECEIVED
-BOTH_DUE_AND_RECEIVED
-```
-
-### `is_realized_transaction`
-Boolean indicating whether the transaction has a currently valid realised date.
-
-### `ledger_effect`
-Calculated as:
-
-```text
-amount_due - amount_received
-```
-
----
-
-# Customer Dimension
-
-## `customer_id`
-Deterministic customer identifier generated from the normalised customer name.
-
-## `customer_name`
-Canonical customer name.
-
-## `first_transaction_date`
-Earliest transaction associated with the customer.
-
-## `last_transaction_date`
-Latest transaction associated with the customer.
-
-## `transaction_count`
-Number of transaction records associated with the customer.
-
-## `total_amount_due`
-Total ledger amount recorded as due.
-
-## `total_amount_received`
-Total ledger amount recorded as received.
-
-## `current_balance`
-Calculated difference between total amount due and total amount received.
-
-```text
-current_balance =
-total_amount_due - total_amount_received
-```
-
-The customer dimension will later be expanded with additional commercial and segmentation attributes.
+Excel operational workbooks
+        ↓
+Workbook profiling
+        ↓
+Customer transaction ingestion
+        ↓
+Staging dataset
+        ↓
+Cleaning and standardisation
+        ↓
+Transaction classification
+        ↓
+Data-quality checks
+        ↓
+Curated transaction dataset
+        ↓
+Customer dimension
+        ↓
+Analytics-ready outputs

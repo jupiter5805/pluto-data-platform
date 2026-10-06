@@ -231,3 +231,31 @@ The next development stages are:
 5. Build Power BI dashboards
 6. Automate pipeline execution
 7. Add cloud infrastructure and monitoring
+## Pluto Data Platform V1
+
+The V1 pipeline converts Pluto Packaging operational Excel workbooks into
+analytics-ready staging, curated and customer-dimension datasets.
+
+```text
+Operational Excel workbooks
+        ↓
+Workbook profiling
+        ↓
+Transaction ingestion
+        ↓
+Staging CSV / Parquet
+        ↓
+Cleaning + classification + quality checks
+        ↓
+Curated CSV / Parquet
+        ↓
+Customer dimension
+        ↓
+Validation + automated tests
+```
+
+Run the complete local pipeline with:
+
+```bash
+./run_pipeline.sh
+```

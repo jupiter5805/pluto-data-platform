@@ -13,4 +13,5 @@ data/processed/*
 !data/bronze/.gitkeep
 !data/processed/.gitkeep
 
-dashboard/*.pbix
+dashboard/*.pbix*.pyc
+*.pyc
