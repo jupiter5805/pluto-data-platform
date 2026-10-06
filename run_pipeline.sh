@@ -38,7 +38,7 @@ python -m src.transform.customer_dimension
 
 echo ""
 echo "[7/7] Running tests and final validation..."
-pytest -q
+python -m pytest -q
 python -m src.quality.final_validation
 
 echo ""
