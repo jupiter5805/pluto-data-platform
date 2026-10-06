@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-if [[ -z "${VIRTUAL_ENV:-}" && -f ".venv/bin/activate" ]]; then
+if [[ -z "${AIRFLOW_HOME:-}" && -z "${VIRTUAL_ENV:-}" && -f ".venv/bin/activate" ]]; then
   source .venv/bin/activate
 fi
 
